@@ -4,8 +4,9 @@ from .models import Product, Collection
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'collection', 'price', 'stock', 'created_at')  # Columns to display in the list view
-    search_fields = ('name','collection')                                # Add a search box for 'name'
+    list_display = ('name', 'collection', 'category', 'price', 'stock', 'created_at')  # Columns to display in the list view
+    search_fields = ('name','collection', 'category')                                # Add a search box for 'name'
+    list_editable = ['category', 'collection', 'stock']
     list_filter = ('created_at',)
 
 

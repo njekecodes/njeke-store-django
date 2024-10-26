@@ -23,9 +23,21 @@ class Collection(models.Model):
 
 
 class Product(models.Model):
+    CATEGORIES = [
+        ('Anklets', 'Anklets'),
+        ('Bracelets', 'Bracelets'),
+        ('Earrings', 'Earrings'),
+        ('Hair', 'Hair Jewellery'),
+        ('Necklace', 'Necklace'),
+        ('Other', 'Other'),
+        ('Phone', 'Phone Accessories'),
+        ('Waistbeads', 'Waistbeads'),
+
+    ]
     name = models.CharField(max_length=100)
     description = models.TextField()
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, blank=True)
+    category = models.CharField(max_length=30, choices=CATEGORIES, default='Earrings')
     price = models.IntegerField()
     stock = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
