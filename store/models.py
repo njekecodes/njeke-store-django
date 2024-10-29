@@ -36,8 +36,8 @@ class Product(models.Model):
     ]
     name = models.CharField(max_length=100)
     description = models.TextField()
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, blank=True)
-    category = models.CharField(max_length=30, choices=CATEGORIES, default='Earrings')
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, blank=True, null=True)
+    category = models.CharField(max_length=100, choices=CATEGORIES, default='Earrings')
     price = models.IntegerField()
     stock = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,10 +49,18 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    src = models.ImageField()
+    image = models.ImageField(upload_to='product_images/')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    created_at = models.DateTimeField(auto_now_add=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(product__images__count__lte=5),
+                name='max_5_images_per_product'
+            )
+        ]
+
     def __str__(self):
-        return self.src
+        return self.image

@@ -11,7 +11,8 @@ class CollectionSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ['src']
+        fields = '__all__'
+
 
 class ProductSerializer(serializers.ModelSerializer):
     collection = CollectionSerializer()
