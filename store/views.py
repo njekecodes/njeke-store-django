@@ -37,6 +37,7 @@ class ProductImageViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filterable_fields = ['collection', 'category']
 
     def create(self, request, *args, **kwargs):
         product_serializer = ProductSerializer(data=request.data)
@@ -53,7 +54,8 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(product_serializer.data, status=status.HTTP_201_CREATED)
         return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    filterable_fields = ['collection', 'category']
+    def get_queryset(self):
+        return self.search_products()
 
     def search_products(self):
         queryset = super().get_queryset()
@@ -61,9 +63,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         for field in self.filterable_fields:
             filter_value = self.request.query_params.get(field)
             if filter_value:
-                queryset = queryset.filter(**{field: filter_value})
+                if field == 'collection':
+                    try:
+                        collection = Collection.objects.get(name__iexact=filter_value)
+                        queryset = queryset.filter(collection=collection.id)
+                    except Collection.DoesNotExist:
+                        return queryset.none()
+                else:
+                    filter_key = f'{field}__iexact'
+                    queryset = queryset.filter(**{f'{field}__iexact': filter_value})
 
-            return queryset
+        return queryset
 
 
 @api_view(['GET'])
