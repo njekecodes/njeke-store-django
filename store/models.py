@@ -3,6 +3,7 @@ from os.path import join
 from time import strptime
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -51,16 +52,20 @@ class Product(models.Model):
 class ProductImage(models.Model):
     image = models.ImageField(upload_to='product_images/')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(product__images__count__lte=5),
-                name='max_5_images_per_product'
-            )
-        ]
 
     def __str__(self):
         return self.image
+
+
+class Review(models.Model):
+    title = models.CharField(max_length=50)
+    rating = models.IntegerField()
+    comment = models.TextField(max_length=200)
+    person = models.CharField(max_length=50, default='Unknown')
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title

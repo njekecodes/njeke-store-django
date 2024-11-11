@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Product, Collection
+from .models import Product, Collection, ProductImage
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 3
+    fields = ['image']
 
 
 @admin.register(Product)
@@ -8,6 +13,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name','collection', 'category')                                # Add a search box for 'name'
     list_editable = ['category', 'collection', 'stock']
     list_filter = ('created_at',)
+    inlines = [ProductImageInline]
 
 
 @admin.register(Collection)

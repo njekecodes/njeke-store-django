@@ -1,4 +1,3 @@
-from django.shortcuts import redirect
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -14,7 +13,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 
 class ProductImageViewSet(viewsets.ModelViewSet):
-    serializer_class =  ProductImageSerializer
+    serializer_class = ProductImageSerializer
 
     def get_queryset(self):
         return ProductImage.objects.all()
@@ -29,7 +28,7 @@ class ProductImageViewSet(viewsets.ModelViewSet):
         if image_count >= 5:
             return Response(
                 {'error': 'Maximum of 5 images per product allowed.'},
-                    status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
         return super().create(request, *args, **kwargs)
 
@@ -37,7 +36,7 @@ class ProductImageViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    filterable_fields = ['collection', 'category']
+    filterable_fields = ['id', 'collection', 'category']
 
     def create(self, request, *args, **kwargs):
         product_serializer = ProductSerializer(data=request.data)
@@ -48,14 +47,15 @@ class ProductViewSet(viewsets.ModelViewSet):
             # Handle product images
             images = request.FILES.getlist('images')
             for image in images:
-                product_image = ProductImage(product=product, src=image)
-                product_image.save()
+                ProductImage.objects.create(product=product, image=image)
 
             return Response(product_serializer.data, status=status.HTTP_201_CREATED)
         return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
     def get_queryset(self):
-        return self.search_products()
+        return self.queryset
+
 
     def search_products(self):
         queryset = super().get_queryset()
@@ -69,6 +69,10 @@ class ProductViewSet(viewsets.ModelViewSet):
                         queryset = queryset.filter(collection=collection.id)
                     except Collection.DoesNotExist:
                         return queryset.none()
+                elif field == 'id':
+                    queryset = queryset.filter(id=filter_value).first()
+                    print('Product Found')
+
                 else:
                     filter_key = f'{field}__iexact'
                     queryset = queryset.filter(**{f'{field}__iexact': filter_value})
