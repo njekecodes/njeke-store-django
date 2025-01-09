@@ -148,9 +148,9 @@ MESSAGE_TAGS = {
 
 }
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = '/signin'
 
@@ -158,9 +158,4 @@ LOGIN_URL = '/signin'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-
-
-
-
-
 ]

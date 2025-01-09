@@ -1,9 +1,12 @@
+import os
+
+from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Product, Collection, ProductImage
-from .serializers import ProductSerializer, CollectionSerializer, ProductImageSerializer
+from .serializers import ProductSerializer, CollectionSerializer, ProductImageSerializer, UserSerializer
 from .utils import load_json_data
 
 
@@ -13,6 +16,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 
 class ProductImageViewSet(viewsets.ModelViewSet):
+    queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
 
     def get_queryset(self):
@@ -39,25 +43,35 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterable_fields = ['id', 'collection', 'category']
 
     def create(self, request, *args, **kwargs):
-        product_serializer = ProductSerializer(data=request.data)
+        data = request.data
 
-        if product_serializer.is_valid():
-            product = product_serializer.save()
+        # validate collection
+        collection_id = data.get('collection')
+        try:
+            collection = Collection.objects.get(id=collection_id)
+        except Collection.DoesNotExist:
+            return Response({'error': 'Invalid collection'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Handle product images
-            images = request.FILES.getlist('images')
+        # create product
+        product = Product.objects.create(
+            name=data.get('name'),
+            description=data.get('description'),
+            price=data.get('price'),
+            category=data.get('category'),
+            collection_id=data.get('collection'),
+            stock=data.get('stock'),
+        )
+        # Handle product images
+        images = request.FILES.getlist('images')
+        if images:
             for image in images:
-                ProductImage.objects.create(product=product, image=image)
+                file_name = image.name
+                ProductImage.objects.create(product=product, image=file_name)
 
-            return Response(product_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        serializer = self.get_serializer(product)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        return self.queryset
-
-
-    def search_products(self):
         queryset = super().get_queryset()
 
         for field in self.filterable_fields:
@@ -74,11 +88,14 @@ class ProductViewSet(viewsets.ModelViewSet):
                     print('Product Found')
 
                 else:
-                    filter_key = f'{field}__iexact'
                     queryset = queryset.filter(**{f'{field}__iexact': filter_value})
 
         return queryset
 
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 @api_view(['GET'])
 def get_categories(request):

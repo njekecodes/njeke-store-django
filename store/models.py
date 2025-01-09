@@ -25,14 +25,14 @@ class Collection(models.Model):
 
 class Product(models.Model):
     CATEGORIES = [
-        ('Anklets', 'Anklets'),
-        ('Bracelets', 'Bracelets'),
-        ('Earrings', 'Earrings'),
-        ('Hair', 'Hair Jewellery'),
-        ('Necklace', 'Necklace'),
-        ('Other', 'Other'),
-        ('Phone', 'Phone Accessories'),
-        ('Waistbeads', 'Waistbeads'),
+        ('anklet', 'anklet'),
+        ('bracelet', 'bracelet'),
+        ('earrings', 'earrings'),
+        ('hair', 'hair jewellery'),
+        ('necklace', 'necklace'),
+        ('other', 'other'),
+        ('phone', 'phone accessories'),
+        ('waist', 'waist beads'),
 
     ]
     name = models.CharField(max_length=100)
@@ -48,9 +48,8 @@ class Product(models.Model):
         return self.name
 
 
-
 class ProductImage(models.Model):
-    image = models.ImageField(upload_to='product_images/')
+    image = models.CharField(max_length=255)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
